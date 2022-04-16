@@ -1,6 +1,6 @@
 if (typeof window.ExcalidrawWrapper === 'undefined') {
   window.ExcalidrawConfig = {
-    rootPath: 'https://roam-excalidraw.com/',
+    rootPath: 'https://roam-excalidraw.vercel.app/',
     channel: 'alpha',
     cljCodeVersion: 'excalidraw.app.alpha.v31',
     DEBUG : false,
