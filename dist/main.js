@@ -14,13 +14,13 @@ window['ExcalidrawWrapper'] = class {
     console.log("notReadyToStart()",(typeof Excalidraw == 'undefined') && (typeof ReactDOM == 'undefined') && (typeof React == 'undefined'));
     return (typeof Excalidraw == 'undefined') && (typeof ReactDOM == 'undefined') && (typeof React == 'undefined');
   }
-  constructor (appName,initData,node,onChangeCallback) {   
-    this.previousSceneVersion = 0; 
+  constructor (appName,initData,node,onChangeCallback) {
+    this.previousSceneVersion = 0;
     this.hostDIV = node.querySelector('#'+appName);
     while (this.hostDIV.firstChild) {
       this.hostDIV.removeChild(this.hostDIV.lastChild);
     }
-    
+
     ReactDOM.render(React.createElement(() => {
       const excalidrawRef = React.useRef(null);
       const excalidrawWrapperRef = React.useRef(null);
@@ -30,7 +30,7 @@ window['ExcalidrawWrapper'] = class {
       });
 
       this.excalidrawRef = excalidrawRef;
-      
+
       React.useEffect(() => {
         setDimensions({
           width: excalidrawWrapperRef.current.getBoundingClientRect().width,
@@ -55,7 +55,7 @@ window['ExcalidrawWrapper'] = class {
         this.previousSceneVersion = Excalidraw.getSceneVersion(scene.elements);
         excalidrawRef.current.updateScene(scene);
       }
-      
+
       const saveToLocalStorage = (data) => {
         try {
           localStorage.setItem(
@@ -77,7 +77,7 @@ window['ExcalidrawWrapper'] = class {
           // Unable to access localStorage
           console.error(error);
         }
-      
+
         let lib = [];
         if (data) {
           try {
@@ -89,7 +89,7 @@ window['ExcalidrawWrapper'] = class {
         }
         return lib;
       };
-      
+
 
       return React.createElement(
         React.Fragment,
@@ -107,8 +107,8 @@ window['ExcalidrawWrapper'] = class {
             initialData: {
               libraryItems: importFromLocalStorage(),
               ... initData},
-            onChange: (el, st) => { 
-                if (st.editingElement == null && st.resizingElement == null && 
+            onChange: (el, st) => {
+                if (st.editingElement == null && st.resizingElement == null &&
                     st.draggingElement == null && st.editingGroupId == null &&
                     st.editingLinearElement == null ) {
                   const sceneVersion = Excalidraw.getSceneVersion(el);
@@ -125,7 +125,7 @@ window['ExcalidrawWrapper'] = class {
                                                   zoom: st.zoom,
                                                   offsetLeft: st.offsetLeft,
                                                   offsetTop: st.offsetTop}
-                                                });                                            
+                                                });
                   }
                 }
             }, //console.log("Elements :", elements, "State : ", state),
@@ -139,12 +139,13 @@ window['ExcalidrawWrapper'] = class {
     }), this.hostDIV);// document.getElementById(appName));
     if (ExcalidrawConfig.DEBUG) console.log("js: ExcalidrawWrapper.constructor() ReactDOM.render() initiated") ;
   }
-    
+
   static getFontFamily(id) {
     switch (id) {
       case 1: return "Virgil, Segoe UI Emoji";
       case 2: return "Helvetica, Segoe UI Emoji";
-      case 3: return "Cascadia, Segoe UI Emoji"; 
+      case 3: return "Cascadia, Segoe UI Emoji";
+      case 4: return "BambooGrove, Segoe UI Emoji";
     }
   }
 
@@ -174,11 +175,11 @@ window['ExcalidrawWrapper'] = class {
     // Baseline is important for positioning text on canvas
     const baseline = span.offsetTop + span.offsetHeight;
     document.body.removeChild(line);
-  
+
     return {width: width, height: height, baseline: baseline };
   };
 
-  //this is a workaround because Roam catches some of the keys (e.g. CTRL+Z) before 
+  //this is a workaround because Roam catches some of the keys (e.g. CTRL+Z) before
   //Exalidraw. When the application is in edit mode / full screen, sink all keyboar events and retrigger
   //to Excalidraw main div
   static fullScreenKeyboardEventRedirect(isFullScreen) {
@@ -204,15 +205,15 @@ window['ExcalidrawWrapper'] = class {
       delete appstate['editingGroupId'];
       delete appstate['editingLinearElement'];
       delete appstate['selectedElementIds'];
-      return {elements: 
+      return {elements:
               o.excalidrawRef.current.getSceneElements(),
               appState: appstate};
     }
   }
-  
+
   static getHostDIVWidth(node) {
     let blockNode = node;
-    let foundIt = false;    
+    let foundIt = false;
     while ( (blockNode!=null) && !foundIt ) {
       foundIt = blockNode.id.startsWith('block-input-');
       if (!foundIt)
@@ -223,12 +224,12 @@ window['ExcalidrawWrapper'] = class {
 
   static setImgEventListner(roamRenderNode,imgNode,appName) {
     let blockNode = roamRenderNode;
-    let foundIt = false;    
+    let foundIt = false;
     while ( (blockNode!=null) && !foundIt ) {
       foundIt = blockNode.id.startsWith('block-input-');
       if (!foundIt)
         blockNode = blockNode.parentElement;
-    }    
+    }
     if(blockNode!=null)
       imgNode.addEventListener('dblclick', function(e) {
         try{
@@ -284,27 +285,27 @@ window['ExcalidrawWrapper'] = class {
     //ReactDOM.unmountComponentAtNode(hostDIV);
     this.cleanupDOMTree(hostDIV);
     let mode = 'light';
-    if (diagram != null) 
+    if (diagram != null)
       if(diagram.appState != null)
-        mode = (diagram.appState.theme == 'dark') ? "dark" : "light";    
-    if (diagram==null) 
+        mode = (diagram.appState.theme == 'dark') ? "dark" : "light";
+    if (diagram==null)
       diagram = excalidrawSplashScreen;
-    else 
-      if (diagram['elements'] == undefined) 
-        diagram = excalidrawSplashScreen;   
-    
+    else
+      if (diagram['elements'] == undefined)
+        diagram = excalidrawSplashScreen;
+
     if(mode == 'dark')
       diagram.appState.exportWithDarkMode = true;
     else
       diagram.appState.exportWithDarkMode = false;
     diagram.appState.exportBackground = true;
-    
+
     hostDIV.appendChild(Excalidraw.exportToSvg(diagram));
     const svg = hostDIV.querySelector('svg');
     const aspectRatio = ExcalidrawWrapper.getAspectRatio(svg);
     //this is a hack. Sometimes the side of images are cut off
     //like Bezier curves, sometimes text as well
-    if(svg.viewBox?.baseVal != null) { 
+    if(svg.viewBox?.baseVal != null) {
       svg.viewBox.baseVal.x -= 20;
       svg.viewBox.baseVal.y -= 20;
       svg.viewBox.baseVal.width += 40;
@@ -316,27 +317,27 @@ window['ExcalidrawWrapper'] = class {
     svg.classList.add('excalidraw-svg');
     return aspectRatio; //aspect ration
   }
-  
+
   static getPNG(diagram,node,appName) {
     const hostDIV = node.querySelector('#'+appName);
     //ReactDOM.unmountComponentAtNode(hostDIV);
     this.cleanupDOMTree(hostDIV);
     let mode = 'light';
-    if (diagram != null) 
+    if (diagram != null)
       if(diagram.appState != null)
         mode = (diagram.appState.theme == 'dark') ? "dark" : "light";
-    if (diagram==null) 
+    if (diagram==null)
       diagram = excalidrawSplashScreen;
-    else 
-      if (diagram['elements'] == undefined) 
-        diagram = excalidrawSplashScreen;    
-    
+    else
+      if (diagram['elements'] == undefined)
+        diagram = excalidrawSplashScreen;
+
     if(mode == 'dark')
       diagram.appState.exportWithDarkMode = true;
     else
       diagram.appState.exportWithDarkMode = false;
     diagram.appState.exportBackground = true;
-      
+
     (async () => {
       const blob = await Excalidraw.exportToBlob({
         ...diagram,
@@ -354,7 +355,7 @@ window['ExcalidrawWrapper'] = class {
     const aspectRatio = ExcalidrawWrapper.getAspectRatio(svg);
     return aspectRatio; //aspect ration
   }
-  
+
   static updateBlock(data) {
      window.roamAlphaAPI.updateBlock(data);
   }
@@ -376,9 +377,9 @@ window['ExcalidrawWrapper'] = class {
       .addPullWatch(
         `[:block/children :block/string :block/order {:block/children ...}]`,
         `[:block/uid "${blockUID}"]`,
-        callback); 
+        callback);
   }
-  
+
   static removePullWatch(blockUID, callback) {
     if(ExcalidrawConfig.DEBUG) console.log('ExcalidrawWrapper','removePullWatch','roamAlphaAPI: ',typeof window.roamAlphaAPI, blockUID, callback);
     window
@@ -387,7 +388,7 @@ window['ExcalidrawWrapper'] = class {
       .removePullWatch(
         `[:block/children :block/string :block/order {:block/children ...}]`,
         `[:block/uid "${blockUID}"]`,
-        callback);     
+        callback);
   }
 
 }
